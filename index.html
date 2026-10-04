@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swing Trader Journal & Pro Suite</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0b0f19',
+                            card: '#131c2e',
+                            border: '#1e293b',
+                            hover: '#1b263b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-subtle { animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+</head>
+<body class="bg-dark-bg text-slate-100 min-h-screen flex flex-col md:flex-row antialiased selection:bg-emerald-500 selection:text-slate-950 pb-20 md:pb-0">
+
+    <!-- Sidebar Navigation for Desktop -->
+    <aside id="sidebar" class="hidden md:flex w-64 bg-dark-card border-r border-dark-border flex-col justify-between shrink-0 transition-all duration-300 z-30 sticky top-0 h-screen">
+        <div>
+            <div class="p-5 flex items-center justify-between border-b border-dark-border">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-slate-950 font-bold text-xl">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-sm tracking-tight text-white">Swing Trader Journal</h1>
+                        <p class="text-[10px] text-emerald-400 font-medium">Pro Suite & News Hub</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <i class="fa-solid fa-house-chimney w-4 text-center"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button onclick="switchTab('journal')" id="nav-journal" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-dark-hover hover:text-slate-200">
+                    <i class="fa-solid fa-book-open w-4 text-center"></i>
+                    <span>Trade Journal</span>
+                    <span id="runningCountBadge" class="ml-auto bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-bold hidden">0</span>
+                </button>
+                <button onclick="switchTab('news')" id="nav-news" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-dark-hover hover:text-slate-200">
+                    <i class="fa-solid fa-globe w-4 text-center"></i>
+                    <span>News & Economic Calendar</span>
+                    <span class="ml-auto bg-blue-500/20 text-blue-400 text-[9px] px-1.5 py-0.5 rounded uppercase font-bold">Live</span>
+                </button>
+                <button onclick="switchTab('calculators')" id="nav-calculators" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-dark-hover hover:text-slate-200">
+                    <i class="fa-solid fa-calculator w-4 text-center"></i>
+                    <span>Pip & Position Calculators</span>
+                </button>
+                <button onclick="switchTab('pairs')" id="nav-pairs" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-dark-hover hover:text-slate-200">
+                    <i class="fa-solid fa-scale-balanced w-4 text-center"></i>
+                    <span>Pairs Analysis</span>
+                </button>
+                <button onclick="switchTab('review')" id="nav-review" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-dark-hover hover:text-slate-200">
+                    <i class="fa-solid fa-calendar-week w-4 text-center"></i>
+                    <span>Weekly / Monthly Review</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-dark-hover hover:text-slate-200">
+                    <i class="fa-solid fa-gear w-4 text-center"></i>
+                    <span>Settings & Data</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-3 border-t border-dark-border m-3 rounded-xl bg-dark-hover/40 text-[11px]">
+            <div class="flex items-center space-x-2 text-emerald-400 font-semibold mb-1">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Local Storage Active</span>
+            </div>
+            <p class="text-slate-400 leading-relaxed text-[10px]">Your trades & notes are securely saved in your browser.</p>
+        </div>
+    </aside>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-dark-card border-t border-dark-border z-40 flex items-center justify-around py-2 px-1">
+        <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="flex flex-col items-center text-emerald-400 p-1">
+            <i class="fa-solid fa-house-chimney text-base"></i>
+            <span class="text-[9px] mt-0.5">Dash</span>
+        </button>
+        <button onclick="switchTab('journal')" id="mob-nav-journal" class="flex flex-col items-center text-slate-400 p-1 relative">
+            <i class="fa-solid fa-book-open text-base"></i>
+            <span class="text-[9px] mt-0.5">Journal</span>
+            <span id="mobRunningBadge" class="absolute top-0 right-2 w-2 h-2 rounded-full bg-amber-500 hidden"></span>
+        </button>
+        <button onclick="switchTab('news')" id="mob-nav-news" class="flex flex-col items-center text-slate-400 p-1">
+            <i class="fa-solid fa-globe text-base"></i>
+            <span class="text-[9px] mt-0.5">News</span>
+        </button>
+        <button onclick="switchTab('calculators')" id="mob-nav-calculators" class="flex flex-col items-center text-slate-400 p-1">
+            <i class="fa-solid fa-calculator text-base"></i>
+            <span class="text-[9px] mt-0.5">Calc</span>
+        </button>
+        <button onclick="switchTab('settings')" id="mob-nav-settings" class="flex flex-col items-center text-slate-400 p-1">
+            <i class="fa-solid fa-gear text-base"></i>
+            <span class="text-[9px] mt-0.5">Settings</span>
+        </button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <!-- Top Header -->
+        <header class="h-16 border-b border-dark-border bg-dark-card/80 backdrop-blur sticky top-0 z-20 px-6 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <h2 id="pageTitle" class="text-base font-bold text-white tracking-tight">Dashboard Overview</h2>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="openAddTradeModal()" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs shadow-lg shadow-emerald-500/20 flex items-center space-x-2 transition-all transform active:scale-95">
+                    <i class="fa-solid fa-plus font-bold"></i>
+                    <span>Execute / Add Trade</span>
+                </button>
+                <div class="h-6 w-px bg-dark-border"></div>
+                <div class="text-right hidden sm:block">
+                    <span class="text-[10px] text-slate-400 block">Balance / Equity</span>
+                    <span id="headerBalance" class="text-xs font-bold text-emerald-400">$10,000.00</span>
+                </div>
+                <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl bg-dark-hover border border-dark-border flex items-center justify-center text-slate-300 hover:text-white transition-all">
+                    <i id="themeIcon" class="fa-solid fa-moon text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body Wrapper -->
+        <div class="p-4 md:p-6 max-w-7xl mx-auto w-full space-y-6">
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content active space-y-6">
+                <!-- Welcome Banner & Quick Demo Loader -->
+                <div class="bg-gradient-to-r from-dark-card to-dark-hover border border-dark-border p-6 rounded-2xl relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Forex Swing Journal Pro</span>
+                        <h3 class="text-xl font-bold text-white mt-2">Professional Execution & Risk Tracking</h3>
+                        <p class="text-slate-400 text-xs mt-1">Plan swing positions, track live running trades, and analyze performance across pairs and setups.</p>
+                    </div>
+                    <div class="flex items-center space-x-3 shrink-0">
+                        <button onclick="loadDemoData()" class="bg-dark-bg hover:bg-dark-border text-slate-300 border border-dark-border px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                            <i class="fa-solid fa-database text-emerald-400"></i>
+                            <span>Load Demo Data</span>
+                        </button>
+                        <button onclick="switchTab('news')" class="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                            <i class="fa-solid fa-globe"></i>
+                            <span>Economic Calendar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Running Trades Alert Banner (if any running) -->
+                <div id="runningTradesAlertContainer" class="hidden">
+                    <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 animate-pulse-subtle">
+                                <i class="fa-solid fa-bolt-lightning text-base"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-amber-400 text-xs flex items-center gap-2">
+                                    <span>Active Running Positions</span>
+                                    <span id="runningBadgeCount" class="bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-bold">0</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-300">Open trades are currently running in the market. Monitor SL/TP and upcoming news catalysts.</p>
+                            </div>
+                        </div>
+                        <button onclick="filterRunningTrades()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold shadow transition-all">
+                            Manage Running Trades
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter Controls for Dashboard & Analytics -->
+                <div class="bg-dark-card border border-dark-border p-4 rounded-2xl flex flex-wrap items-center gap-3">
+                    <div class="text-xs font-bold text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-emerald-400"></i>
+                        <span>Filters:</span>
+                    </div>
+                    <select id="filterPair" onchange="updateAllUI()" class="bg-dark-bg border border-dark-border text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-emerald-500">
+                        <option value="ALL">All Pairs</option>
+                    </select>
+                    <select id="filterSetup" onchange="updateAllUI()" class="bg-dark-bg border border-dark-border text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-emerald-500">
+                        <option value="ALL">All Setups</option>
+                    </select>
+                    <select id="filterType" onchange="updateAllUI()" class="bg-dark-bg border border-dark-border text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-emerald-500">
+                        <option value="ALL">All Directions (Long/Short)</option>
+                        <option value="BUY">Long / Buy</option>
+                        <option value="SELL">Short / Sell</option>
+                    </select>
+                    <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-white underline ml-auto">Reset Filters</button>
+                </div>
+
+                <!-- Comprehensive Metrics Cards Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-dark-card border border-dark-border p-4 rounded-2xl">
+                        <span class="text-[10px] font-medium uppercase tracking-wider text-slate-400 block mb-1">Account Balance</span>
+                        <div class="text-xl font-bold text-white" id="statBalance">$10,000.00</div>
+                        <div class="text-[10px] text-emerald-400 mt-1 font-semibold" id="statNetProfit">+$0.00 Net P&L</div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border p-4 rounded-2xl">
+                        <span class="text-[10px] font-medium uppercase tracking-wider text-slate-400 block mb-1">Win Rate</span>
+                        <div class="text-xl font-bold text-white" id="statWinRate">0.0%</div>
+                        <div class="text-[10px] text-slate-400 mt-1" id="statWinsLosses">0 Wins / 0 Losses</div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border p-4 rounded-2xl">
+                        <span class="text-[10px] font-medium uppercase tracking-wider text-slate-400 block mb-1">Profit Factor</span>
+                        <div class="text-xl font-bold text-white" id="statProfitFactor">0.00</div>
+                        <div class="text-[10px] text-slate-400 mt-1">Expectancy & Risk Ratio</div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border p-4 rounded-2xl">
+                        <span class="text-[10px] font-medium uppercase tracking-wider text-slate-400 block mb-1">Total Pips Gained</span>
+                        <div class="text-xl font-bold text-emerald-400" id="statTotalPips">0.0 pips</div>
+                        <div class="text-[10px] text-slate-400 mt-1" id="statTotalTradesCount">0 Total Trades</div>
+                    </div>
+                </div>
+
+                <!-- Secondary Metrics Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-dark-card border border-dark-border p-3.5 rounded-xl">
+                        <span class="text-[10px] text-slate-400 block">Avg Win / Avg Loss</span>
+                        <div class="text-xs font-bold text-white mt-1"><span id="statAvgWin" class="text-emerald-400">$0</span> / <span id="statAvgLoss" class="text-rose-400">$0</span></div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border p-3.5 rounded-xl">
+                        <span class="text-[10px] text-slate-400 block">Avg R-Multiple</span>
+                        <div class="text-xs font-bold text-white mt-1" id="statAvgR">0.00R</div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border p-3.5 rounded-xl">
+                        <span class="text-[10px] text-slate-400 block">Best / Worst Trade</span>
+                        <div class="text-xs font-bold text-white mt-1"><span id="statBestTrade" class="text-emerald-400">+$0</span> / <span id="statWorstTrade" class="text-rose-400">$0</span></div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border p-3.5 rounded-xl">
+                        <span class="text-[10px] text-slate-400 block">Open / Running Trades</span>
+                        <div class="text-xs font-bold text-amber-400 mt-1" id="statRunningTradesBox">0 Running</div>
+                    </div>
+                </div>
+
+                <!-- Charts Section (Chart.js) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-dark-card border border-dark-border p-5 rounded-2xl">
+                        <h4 class="font-bold text-white text-xs mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                            <span>Equity Curve Growth</span>
+                        </h4>
+                        <div class="h-64 relative">
+                            <canvas id="equityCurveChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border p-5 rounded-2xl">
+                        <h4 class="font-bold text-white text-xs mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-bar text-blue-400"></i>
+                            <span>Net P&L by Currency Pair</span>
+                        </h4>
+                        <div class="h-64 relative">
+                            <canvas id="pairPnLChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-dark-card border border-dark-border p-5 rounded-2xl">
+                        <h4 class="font-bold text-white text-xs mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-bullseye text-purple-400"></i>
+                            <span>Win Rate by Setup</span>
+                        </h4>
+                        <div class="h-64 relative">
+                            <canvas id="setupWinRateChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border p-5 rounded-2xl">
+                        <h4 class="font-bold text-white text-xs mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-days text-amber-400"></i>
+                            <span>Monthly Net P&L</span>
+                        </h4>
+                        <div class="h-64 relative">
+                            <canvas id="monthlyPnLChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: TRADE JOURNAL -->
+            <div id="tab-journal" class="tab-content space-y-6">
+                <!-- Journal Header & Filters -->
+                <div class="bg-dark-card border border-dark-border p-5 rounded-2xl flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                                <i class="fa-solid fa-search text-xs"></i>
+                            </span>
+                            <input type="text" id="journalSearch" oninput="renderJournalTable()" placeholder="Search pair, setup, notes..." class="bg-dark-bg border border-dark-border text-xs rounded-xl pl-9 pr-4 py-2 text-slate-200 focus:outline-none focus:border-emerald-500 w-full sm:w-60">
+                        </div>
+                        <select id="journalFilterStatus" onchange="renderJournalTable()" class="bg-dark-bg border border-dark-border text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">All Statuses</option>
+                            <option value="RUNNING">Running / Active</option>
+                            <option value="CLOSED">Closed Trades</option>
+                        </select>
+                        <select id="journalFilterOutcome" onchange="renderJournalTable()" class="bg-dark-bg border border-dark-border text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">All Outcomes</option>
+                            <option value="WIN">Wins Only</option>
+                            <option value="LOSS">Losses Only</option>
+                            <option value="BE">Break-even</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="openAddTradeModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Execute / Add Trade</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Journal Table -->
+                <div class="bg-dark-card border border-dark-border rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="border-b border-dark-border uppercase bg-dark-hover text-slate-400">
+                                <tr>
+                                    <th class="p-3.5">Status</th>
+                                    <th class="p-3.5">Pair</th>
+                                    <th class="p-3.5">Type / TF</th>
+                                    <th class="p-3.5">Entry Date & Time</th>
+                                    <th class="p-3.5">Setup</th>
+                                    <th class="p-3.5">Entry / Exit</th>
+                                    <th class="p-3.5">Risk / RR</th>
+                                    <th class="p-3.5">Pips</th>
+                                    <th class="p-3.5">Net P&L ($)</th>
+                                    <th class="p-3.5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="journalTableBody" class="divide-y divide-dark-border/50">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Empty State -->
+                    <div id="journalEmptyState" class="hidden p-12 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-dark-hover text-slate-500 flex items-center justify-center mx-auto mb-3 text-xl">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <h5 class="text-white font-bold text-sm">No trades found</h5>
+                        <p class="text-xs text-slate-400 mt-1">Execute your first swing trade or load demo data to get started.</p>
+                        <button onclick="loadDemoData()" class="mt-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-500/20 transition-all">
+                            Load Demo Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: NEWS & ECONOMIC CALENDAR -->
+            <div id="tab-news" class="tab-content space-y-6">
+                <!-- News Header Banner -->
+                <div class="bg-gradient-to-r from-blue-900/30 via-dark-card to-dark-card border border-blue-500/30 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">Macro & Live Fundamentals</span>
+                        <h3 class="text-xl font-bold text-white mt-2">Economic Calendar & News Hub</h3>
+                        <p class="text-slate-400 text-xs mt-1">Direct access to Forex Factory & Investing.com economic calendars. Plan swing entries around high-impact news.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span class="text-xs font-bold text-emerald-400">Live Markets Feed Connected</span>
+                    </div>
+                </div>
+
+                <!-- Calendar Quick Access Cards -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Forex Factory Card -->
+                    <div class="bg-dark-card border border-dark-border rounded-2xl p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-xs">FF</div>
+                                    <div>
+                                        <h4 class="font-bold text-white text-xs">Forex Factory Calendar</h4>
+                                        <p class="text-[10px] text-slate-400">Industry standard weekly forex calendar</p>
+                                    </div>
+                                </div>
+                                <a href="https://www.forexfactory.com/calendar" target="_blank" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                                    <span>Open Site</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                </a>
+                            </div>
+                            <div class="bg-dark-bg border border-dark-border rounded-xl p-6 text-center my-4 flex flex-col items-center justify-center space-y-3">
+                                <i class="fa-solid fa-calendar-days text-3xl text-red-400"></i>
+                                <div class="text-xs text-slate-300 font-medium">Click below to open Forex Factory weekly calendar in a clean tab.</div>
+                                <a href="https://www.forexfactory.com/calendar" target="_blank" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow transition-all">
+                                    Launch Forex Factory Calendar
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-slate-400 bg-dark-hover/30 p-3 rounded-xl border border-dark-border">
+                            <span class="font-bold text-white">Swing Tip:</span> Always check for red-folder events on USD, EUR, and GBP before holding swing positions overnight.
+                        </div>
+                    </div>
+
+                    <!-- Investing.com Card -->
+                    <div class="bg-dark-card border border-dark-border rounded-2xl p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">INV</div>
+                                    <div>
+                                        <h4 class="font-bold text-white text-xs">Investing.com Economic Calendar</h4>
+                                        <p class="text-[10px] text-slate-400">Global macro data & central bank rates</p>
+                                    </div>
+                                </div>
+                                <a href="https://www.investing.com/economic-calendar/" target="_blank" class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                                    <span>Open Site</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                </a>
+                            </div>
+                            <div class="bg-dark-bg border border-dark-border rounded-xl p-6 text-center my-4 flex flex-col items-center justify-center space-y-3">
+                                <i class="fa-solid fa-globe text-3xl text-blue-400"></i>
+                                <div class="text-xs text-slate-300 font-medium">Access real-time consensus forecasts and actual data releases.</div>
+                                <a href="https://www.investing.com/economic-calendar/" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow transition-all">
+                                    Launch Investing.com Calendar
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-slate-400 bg-dark-hover/30 p-3 rounded-xl border border-dark-border">
+                            <span class="font-bold text-white">Macro Insight:</span> Pair your technical swing zones with high-impact CPI, NFP, and FOMC rate decisions.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Fundamental News Notes Journal -->
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="font-bold text-white text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-pen-nib text-emerald-400"></i>
+                                <span>Daily News & Catalyst Journal Notes</span>
+                            </h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Record daily macroeconomic sentiment, central bank bias, and upcoming news risks.</p>
+                        </div>
+                        <button onclick="saveNewsJournalNote()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold shadow transition-all">
+                            Save Notes
+                        </button>
+                    </div>
+                    <textarea id="fullNewsNotesArea" rows="5" placeholder="Record your daily news insights here (e.g., NFP Friday today, watch USD volatility, hawkish Fed speaker comments...)" class="w-full bg-dark-bg border border-dark-border rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"></textarea>
+                </div>
+            </div>
+
+            <!-- TAB 4: PIP & POSITION CALCULATORS -->
+            <div id="tab-calculators" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Calculator 1: Position Size Calculator -->
+                    <div class="bg-dark-card border border-dark-border p-6 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-white text-xs mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-calculator text-emerald-400"></i>
+                                <span>Position Size & Risk Calculator</span>
+                            </h4>
+                            <p class="text-[10px] text-slate-400 mb-4">Calculate exact lot size based on account risk percentage.</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1">Account Balance ($)</label>
+                                    <input type="number" id="calcBalance" value="10000" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1">Risk Percentage (%)</label>
+                                    <input type="number" id="calcRiskPct" value="1.0" step="0.1" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 mb-1">Entry Price</label>
+                                        <input type="number" id="calcEntry" placeholder="1.0850" step="any" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 mb-1">Stop Loss Price</label>
+                                        <input type="number" id="calcSL" placeholder="1.0800" step="any" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-dark-border space-y-2">
+                            <button onclick="calculatePositionSize()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all">
+                                Calculate Position Size
+                            </button>
+                            <div id="posCalcResult" class="hidden text-xs space-y-1 bg-dark-bg p-3 rounded-xl border border-dark-border">
+                                <div class="flex justify-between"><span class="text-slate-400">Risk Amount:</span><span id="posResRisk" class="font-bold text-white">$100.00</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">SL Pips:</span><span id="posResPips" class="font-bold text-white">50.0 pips</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Lot Size:</span><span id="posResLots" class="font-bold text-emerald-400">0.20 lots</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calculator 2: Pip Value & Profit Calculator -->
+                    <div class="bg-dark-card border border-dark-border p-6 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-white text-xs mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-coins text-blue-400"></i>
+                                <span>Pip & Profit Value Calculator</span>
+                            </h4>
+                            <p class="text-[10px] text-slate-400 mb-4">Calculate monetary value of pip distance and lot size.</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1">Lot Size (Standard)</label>
+                                    <input type="number" id="pipLotSize" value="1.0" step="0.01" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 mb-1">Entry Price</label>
+                                        <input type="number" id="pipEntry" placeholder="1.0850" step="any" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 mb-1">Exit Price</label>
+                                        <input type="number" id="pipExit" placeholder="1.0920" step="any" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1">Pair Type (Quote Currency)</label>
+                                    <select id="pipPairType" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                        <option value="STANDARD">USD Quote (EURUSD, GBPUSD, AUDUSD - $10/pip standard lot)</option>
+                                        <option value="JPY">JPY Pair (USDJPY, EURJPY - ~ $6.50-10/pip)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-dark-border space-y-2">
+                            <button onclick="calculatePipProfit()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all">
+                                Calculate Profit / Pips
+                            </button>
+                            <div id="pipCalcResult" class="hidden text-xs space-y-1 bg-dark-bg p-3 rounded-xl border border-dark-border">
+                                <div class="flex justify-between"><span class="text-slate-400">Total Pips:</span><span id="pipResPips" class="font-bold text-white">70.0 pips</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Estimated Profit:</span><span id="pipResMoney" class="font-bold text-emerald-400">$700.00</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calculator 3: Risk-to-Reward Calculator -->
+                    <div class="bg-dark-card border border-dark-border p-6 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-white text-xs mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-scale-balanced text-purple-400"></i>
+                                <span>Risk-to-Reward (R:R) Planner</span>
+                            </h4>
+                            <p class="text-[10px] text-slate-400 mb-4">Evaluate planned R:R ratio before taking a swing position.</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1">Entry Price</label>
+                                    <input type="number" id="rrEntry" placeholder="1.0850" step="any" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 mb-1">Stop Loss</label>
+                                        <input type="number" id="rrSL" placeholder="1.0800" step="any" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 mb-1">Take Profit</label>
+                                        <input type="number" id="rrTP" placeholder="1.1000" step="any" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-dark-border space-y-2">
+                            <button onclick="calculateRR()" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all">
+                                Calculate R:R Ratio
+                            </button>
+                            <div id="rrCalcResult" class="hidden text-xs space-y-1 bg-dark-bg p-3 rounded-xl border border-dark-border">
+                                <div class="flex justify-between"><span class="text-slate-400">Risk / Reward Pips:</span><span id="rrResPips" class="font-bold text-white">50 / 150 pips</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Risk-to-Reward Ratio:</span><span id="rrResRatio" class="font-bold text-purple-400">1 : 3.00R</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pip Rules Reference Note -->
+                <div class="bg-dark-card border border-dark-border p-5 rounded-2xl">
+                    <h5 class="font-bold text-white text-xs mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-emerald-400"></i>
+                        <span>Forex Pip Calculation Rules & Guidelines</span>
+                    </h5>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li><strong>Standard Pairs (EURUSD, GBPUSD, AUDUSD, etc.):</strong> 1 pip = 0.0001 movement. Lot value is approx $10.00 per pip for 1.0 standard lot.</li>
+                        <li><strong>JPY Pairs (USDJPY, EURJPY, GBPJPY, etc.):</strong> 1 pip = 0.01 movement (second decimal place).</li>
+                        <li><strong>Risk-to-Reward:</strong> Calculated as (Take Profit Distance) / (Stop Loss Distance). Swing traders aim for minimum 1:2 or 1:3 R:R.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 5: PAIRS ANALYSIS -->
+            <div id="tab-pairs" class="tab-content space-y-6">
+                <div class="bg-dark-card border border-dark-border p-6 rounded-2xl">
+                    <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-scale-balanced text-emerald-400"></i>
+                        <span>Performance by Instrument / Pair</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-6">Detailed breakdown of win rate, net P&L, and R-multiples for each traded currency pair.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="border-b border-dark-border uppercase bg-dark-hover text-slate-400">
+                                <tr>
+                                    <th class="p-3.5">Instrument</th>
+                                    <th class="p-3.5">Total Trades</th>
+                                    <th class="p-3.5">Wins / Losses</th>
+                                    <th class="p-3.5">Win Rate</th>
+                                    <th class="p-3.5">Total Pips</th>
+                                    <th class="p-3.5 text-right">Net P&L ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pairsTableBody" class="divide-y divide-dark-border/50">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: WEEKLY / MONTHLY REVIEW -->
+            <div id="tab-review" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-dark-card border border-dark-border p-6 rounded-2xl">
+                        <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-week text-emerald-400"></i>
+                            <span>Weekly Performance Review</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">Reflect on your weekly execution, adherence to setup rules, and discipline.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">What went well this week?</label>
+                                <textarea id="reviewWeeklyGood" oninput="saveReviewNotes()" rows="3" placeholder="e.g., Patient waiting for 4H support bounce, respected stop losses..." class="w-full bg-dark-bg border border-dark-border rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Mistakes & Areas for Improvement</label>
+                                <textarea id="reviewWeeklyMistakes" oninput="saveReviewNotes()" rows="3" placeholder="e.g., Exited GBPUSD trade too early before TP..." class="w-full bg-dark-bg border border-dark-border rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-dark-card border border-dark-border p-6 rounded-2xl">
+                        <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar text-blue-400"></i>
+                            <span>Monthly Strategy & Plan</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">Set your primary focus and macro objectives for the upcoming month.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Monthly Focus / Key Pairs</label>
+                                <textarea id="reviewMonthlyFocus" oninput="saveReviewNotes()" rows="3" placeholder="e.g., Focus mainly on EURUSD and Gold breakout swings..." class="w-full bg-dark-bg border border-dark-border rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Risk & Psychological Goals</label>
+                                <textarea id="reviewMonthlyPsych" oninput="saveReviewNotes()" rows="3" placeholder="e.g., Maximum 2% risk per trade, no revenge trading after losses..." class="w-full bg-dark-bg border border-dark-border rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: SETTINGS -->
+            <div id="tab-settings" class="tab-content space-y-6">
+                <div class="bg-dark-card border border-dark-border p-6 rounded-2xl max-w-2xl mx-auto space-y-6">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-gear text-emerald-400"></i>
+                        <span>Settings & Data Management</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Starting Account Capital ($)</label>
+                            <input type="number" id="settingsStartingBalance" value="10000" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Account Currency</label>
+                            <select id="settingsCurrency" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="saveSettingsAccount()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition-all">
+                        Save Account Settings
+                    </button>
+
+                    <div class="border-t border-dark-border pt-6 space-y-3">
+                        <h4 class="font-bold text-white text-xs">Custom Trading Setups List (comma separated)</h4>
+                        <div class="flex space-x-2">
+                            <input type="text" id="settingsSetupsInput" value="Support/Resistance Bounce, Breakout & Retest, Trend Continuation, Moving Average Cross, Supply/Demand Zone" class="flex-1 bg-dark-bg border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <button onclick="saveSetupsList()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all">Update</button>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-dark-border pt-6 space-y-3">
+                        <h4 class="font-bold text-white text-xs">Data Backup & Portability</h4>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="exportTradesCSV()" class="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                                <i class="fa-solid fa-file-csv"></i>
+                                <span>Export CSV</span>
+                            </button>
+                            <label class="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30 px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 cursor-pointer transition-all">
+                                <i class="fa-solid fa-file-arrow-up"></i>
+                                <span>Import CSV</span>
+                                <input type="file" id="csvFileInput" accept=".csv" onchange="importTradesCSV(event)" class="hidden">
+                            </label>
+                            <button onclick="clearAllDataConfirm()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                                <i class="fa-solid fa-trash"></i>
+                                <span>Reset All Data</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Add/Edit Trade Execution Modal -->
+    <div id="tradeModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-dark-card border border-dark-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-5 border-b border-dark-border flex items-center justify-between sticky top-0 bg-dark-card z-10">
+                <h3 id="modalTitle" class="font-bold text-white text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-emerald-400"></i>
+                    <span>Execute / Journal Swing Trade</span>
+                </h3>
+                <button onclick="closeAddTradeModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="tradeForm" onsubmit="handleTradeFormSubmit(event)" class="p-5 space-y-4">
+                <input type="hidden" id="editTradeId">
+
+                <!-- Trade Status Toggle -->
+                <div class="bg-dark-bg border border-dark-border p-3.5 rounded-xl">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">Trade Status (Execution Mode)</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center space-x-3 p-2.5 rounded-xl border border-dark-border bg-dark-hover cursor-pointer hover:border-emerald-500/50 transition-all">
+                            <input type="radio" name="tradeStatus" value="RUNNING" checked onchange="toggleTradeStatusFields()" class="text-emerald-500 focus:ring-emerald-500">
+                            <div>
+                                <span class="block text-xs font-bold text-white">🟢 Running / Active</span>
+                                <span class="block text-[10px] text-slate-400">Open position in market</span>
+                            </div>
+                        </label>
+                        <label class="flex items-center space-x-3 p-2.5 rounded-xl border border-dark-border bg-dark-hover cursor-pointer hover:border-emerald-500/50 transition-all">
+                            <input type="radio" name="tradeStatus" value="CLOSED" onchange="toggleTradeStatusFields()" class="text-emerald-500 focus:ring-emerald-500">
+                            <div>
+                                <span class="block text-xs font-bold text-white">🔴 Closed Trade</span>
+                                <span class="block text-[10px] text-slate-400">Completed with exit result</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Currency Pair</label>
+                        <select id="tradePair" required class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white uppercase focus:outline-none focus:border-emerald-500">
+                            <option value="EURUSD">EURUSD</option>
+                            <option value="GBPUSD">GBPUSD</option>
+                            <option value="USDJPY">USDJPY</option>
+                            <option value="XAUUSD">XAUUSD (Gold)</option>
+                            <option value="AUDUSD">AUDUSD</option>
+                            <option value="USDCAD">USDCAD</option>
+                            <option value="NZDUSD">NZDUSD</option>
+                            <option value="GBPJPY">GBPJPY</option>
+                            <option value="EURJPY">EURJPY</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Direction (Type)</label>
+                        <select id="tradeType" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="BUY">BUY / LONG</option>
+                            <option value="SELL">SELL / SHORT</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Timeframe</label>
+                        <select id="tradeTimeframe" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="4H">4 Hours (4H)</option>
+                            <option value="Daily">Daily (1D)</option>
+                            <option value="Weekly">Weekly (1W)</option>
+                            <option value="1H">1 Hour (1H)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Setup / Strategy</label>
+                        <select id="tradeSetup" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="Support/Resistance Bounce">Support/Resistance Bounce</option>
+                            <option value="Breakout & Retest">Breakout & Retest</option>
+                            <option value="Trend Continuation">Trend Continuation</option>
+                            <option value="Supply/Demand Zone">Supply/Demand Zone</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Entry Date</label>
+                        <input type="date" id="tradeEntryDate" required class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Entry Time</label>
+                        <input type="time" id="tradeEntryTime" required class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Entry Price</label>
+                        <input type="number" step="any" id="tradeEntryPrice" placeholder="1.0850" required class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Stop Loss (SL)</label>
+                        <input type="number" step="any" id="tradeSL" placeholder="1.0800" required class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Take Profit (TP)</label>
+                        <input type="number" step="any" id="tradeTP" placeholder="1.0950" required class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Lot Size</label>
+                        <input type="number" step="0.01" id="tradeLotSize" value="1.0" required class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <!-- Closed Trade Specific Fields (Hidden if Running) -->
+                <div id="closedFieldsSection" class="space-y-3 pt-2 border-t border-dark-border hidden">
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Exit Price</label>
+                            <input type="number" step="any" id="tradeExitPrice" placeholder="1.0930" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Outcome</label>
+                            <select id="tradeOutcome" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                <option value="WIN">WIN (+)</option>
+                                <option value="LOSS">LOSS (-)</option>
+                                <option value="BE">BREAK-EVEN</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Net P&L ($)</label>
+                            <input type="number" step="any" id="tradePnL" placeholder="180.00" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Commission / Swap ($)</label>
+                            <input type="number" step="any" id="tradeComm" value="0" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Emotion / Discipline Tag</label>
+                        <select id="tradeEmotion" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="Calm & Patient">Calm & Patient</option>
+                            <option value="Fomo / Chased">Fomo / Chased</option>
+                            <option value="Excited / Greedy">Excited / Greedy</option>
+                            <option value="Disciplined Plan">Disciplined Plan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Chart Screenshot URL</label>
+                        <input type="text" id="tradeScreenshot" placeholder="https://tradingview.com/x/..." class="w-full bg-dark-bg border border-dark-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-medium text-slate-400 mb-1">Trade Notes / Strategy Rationale</label>
+                    <textarea id="tradeNotes" rows="2" placeholder="e.g., Daily swing support bounce, news catalyst alignment..." class="w-full bg-dark-bg border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-3 border-t border-dark-border">
+                    <button type="button" onclick="closeAddTradeModal()" class="bg-dark-hover hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold transition-all">Cancel</button>
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2 rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all">Save Trade Execution</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Alerts -->
+    <div id="customModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-dark-card border border-dark-border rounded-2xl w-full max-w-sm p-6 text-center space-y-4">
+            <div id="customModalIcon" class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-lg">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h4 id="customModalTitle" class="font-bold text-white text-sm">Notification</h4>
+            <p id="customModalMessage" class="text-xs text-slate-300">Message content here.</p>
+            <div class="flex justify-center pt-2">
+                <button onclick="closeCustomModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-6 py-2 rounded-xl text-xs font-bold">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Core State Management
+        let appData = {
+            startingBalance: 10000,
+            currency: 'USD',
+            setups: ['Support/Resistance Bounce', 'Breakout & Retest', 'Trend Continuation', 'Supply/Demand Zone'],
+            trades: [],
+            newsNotes: '',
+            reviewWeeklyGood: '',
+            reviewWeeklyMistakes: '',
+            reviewMonthlyFocus: '',
+            reviewMonthlyPsych: ''
+        };
+
+        let equityChartInstance = null;
+        let pairChartInstance = null;
+        let setupChartInstance = null;
+        let monthlyChartInstance = null;
+
+        // Initialize on load
+        window.onload = function() {
+            loadFromLocalStorage();
+            setDefaultTradeDateTime();
+            updateAllUI();
+        };
+
+        // Local Storage Helpers
+        function saveToLocalStorage() {
+            localStorage.setItem('swingTraderJournalProData_v3', JSON.stringify(appData));
+        }
+
+        function loadFromLocalStorage() {
+            const data = localStorage.getItem('swingTraderJournalProData_v3');
+            if (data) {
+                try {
+                    appData = JSON.parse(data);
+                } catch (e) {
+                    console.error("Error loading saved state", e);
+                }
+            } else {
+                loadDemoDataWithoutSave();
+            }
+
+            // Populate settings fields
+            if (appData.startingBalance) document.getElementById('settingsStartingBalance').value = appData.startingBalance;
+            if (appData.currency) document.getElementById('settingsCurrency').value = appData.currency;
+            if (appData.newsNotes) document.getElementById('fullNewsNotesArea').value = appData.newsNotes;
+            if (appData.reviewWeeklyGood) document.getElementById('reviewWeeklyGood').value = appData.reviewWeeklyGood;
+            if (appData.reviewWeeklyMistakes) document.getElementById('reviewWeeklyMistakes').value = appData.reviewWeeklyMistakes;
+            if (appData.reviewMonthlyFocus) document.getElementById('reviewMonthlyFocus').value = appData.reviewMonthlyFocus;
+            if (appData.reviewMonthlyPsych) document.getElementById('reviewMonthlyPsych').value = appData.reviewMonthlyPsych;
+        }
+
+        function setDefaultTradeDateTime() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+
+            document.getElementById('tradeEntryDate').value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('tradeEntryTime').value = `${hh}:${min}`;
+        }
+
+        function loadDemoDataWithoutSave() {
+            appData.startingBalance = 10000;
+            appData.trades = [
+                {
+                    id: 'trade-1',
+                    status: 'CLOSED',
+                    pair: 'EURUSD',
+                    type: 'BUY',
+                    timeframe: '4H',
+                    setup: 'Support/Resistance Bounce',
+                    entryDate: '2026-09-10',
+                    entryTime: '08:30',
+                    entryPrice: 1.0820,
+                    sl: 1.0780,
+                    tp: 1.0920,
+                    lotSize: 1.0,
+                    exitPrice: 1.0910,
+                    outcome: 'WIN',
+                    pnl: 180.00,
+                    comm: 5.00,
+                    emotion: 'Calm & Patient',
+                    screenshot: '',
+                    notes: 'Clean bounce off daily support level ahead of ECB meeting.'
+                },
+                {
+                    id: 'trade-2',
+                    status: 'CLOSED',
+                    pair: 'GBPUSD',
+                    type: 'SELL',
+                    timeframe: 'Daily',
+                    setup: 'Breakout & Retest',
+                    entryDate: '2026-09-18',
+                    entryTime: '14:00',
+                    entryPrice: 1.3150,
+                    sl: 1.3210,
+                    tp: 1.3000,
+                    lotSize: 0.8,
+                    exitPrice: 1.3205,
+                    outcome: 'LOSS',
+                    pnl: -120.00,
+                    comm: 4.00,
+                    emotion: 'Fomo / Chased',
+                    screenshot: '',
+                    notes: 'Failed retest of previous support zone.'
+                },
+                {
+                    id: 'trade-3',
+                    status: 'RUNNING',
+                    pair: 'XAUUSD',
+                    type: 'BUY',
+                    timeframe: '4H',
+                    setup: 'Trend Continuation',
+                    entryDate: '2026-10-02',
+                    entryTime: '10:15',
+                    entryPrice: 2650.00,
+                    sl: 2635.00,
+                    tp: 2700.00,
+                    lotSize: 0.5,
+                    exitPrice: '',
+                    outcome: '',
+                    pnl: 0,
+                    comm: 0,
+                    emotion: 'Disciplined Plan',
+                    screenshot: '',
+                    notes: 'Gold momentum continuation swing trade ahead of NFP release.'
+                }
+            ];
+        }
+
+        function loadDemoData() {
+            loadDemoDataWithoutSave();
+            saveToLocalStorage();
+            updateAllUI();
+            showCustomModal('Demo Data Loaded', 'Sample trades successfully loaded into your journal.');
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = 'fa-solid fa-sun text-xs text-amber-400';
+            } else {
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-moon text-xs text-slate-300';
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('aside nav button').forEach(el => {
+                el.classList.remove('bg-emerald-500/10', 'text-emerald-400', 'border', 'border-emerald-500/20');
+                el.classList.add('text-slate-400', 'hover:bg-dark-hover', 'hover:text-slate-200');
+            });
+
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) targetTab.classList.add('active');
+
+            const targetNav = document.getElementById(`nav-${tabId}`);
+            if (targetNav) {
+                targetNav.classList.remove('text-slate-400', 'hover:bg-dark-hover', 'hover:text-slate-200');
+                targetNav.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border', 'border-emerald-500/20');
+            }
+
+            const titles = {
+                dashboard: 'Dashboard Overview',
+                journal: 'Trade Journal & Executions',
+                news: 'Economic Calendar & News Hub',
+                calculators: 'Pip & Position Calculators',
+                pairs: 'Pairs Analysis',
+                review: 'Weekly / Monthly Review',
+                settings: 'Settings & Data'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabId] || 'Dashboard';
+
+            if (tabId === 'dashboard') {
+                updateAllUI();
+            } else if (tabId === 'pairs') {
+                renderPairsTable();
+            } else if (tabId === 'journal') {
+                renderJournalTable();
+            }
+        }
+
+        // Modal Handlers
+        function openAddTradeModal(tradeId = null) {
+            document.getElementById('tradeModal').classList.remove('hidden');
+            populateDropdowns();
+
+            if (tradeId) {
+                document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-emerald-400"></i><span>Edit Trade Execution</span>';
+                const trade = appData.trades.find(t => t.id === tradeId);
+                if (trade) {
+                    document.getElementById('editTradeId').value = trade.id;
+                    const radios = document.getElementsByName('tradeStatus');
+                    for (let r of radios) {
+                        r.checked = (r.value === trade.status);
+                    }
+                    toggleTradeStatusFields();
+                    document.getElementById('tradePair').value = trade.pair;
+                    document.getElementById('tradeType').value = trade.type;
+                    document.getElementById('tradeTimeframe').value = trade.timeframe;
+                    document.getElementById('tradeSetup').value = trade.setup;
+                    document.getElementById('tradeEntryDate').value = trade.entryDate;
+                    document.getElementById('tradeEntryTime').value = trade.entryTime;
+                    document.getElementById('tradeEntryPrice').value = trade.entryPrice;
+                    document.getElementById('tradeSL').value = trade.sl;
+                    document.getElementById('tradeTP').value = trade.tp;
+                    document.getElementById('tradeLotSize').value = trade.lotSize;
+                    document.getElementById('tradeExitPrice').value = trade.exitPrice || '';
+                    document.getElementById('tradeOutcome').value = trade.outcome || 'WIN';
+                    document.getElementById('tradePnL').value = trade.pnl || '';
+                    document.getElementById('tradeComm').value = trade.comm || 0;
+                    document.getElementById('tradeEmotion').value = trade.emotion || 'Calm & Patient';
+                    document.getElementById('tradeScreenshot').value = trade.screenshot || '';
+                    document.getElementById('tradeNotes').value = trade.notes || '';
+                }
+            } else {
+                document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-bolt text-emerald-400"></i><span>Execute / Journal Swing Trade</span>';
+                document.getElementById('tradeForm').reset();
+                document.getElementById('editTradeId').value = '';
+                setDefaultTradeDateTime();
+                const radios = document.getElementsByName('tradeStatus');
+                radios[0].checked = true; // RUNNING default
+                toggleTradeStatusFields();
+            }
+        }
+
+        function closeAddTradeModal() {
+            document.getElementById('tradeModal').classList.add('hidden');
+        }
+
+        function toggleTradeStatusFields() {
+            const status = document.querySelector('input[name="tradeStatus"]:checked').value;
+            const closedSection = document.getElementById('closedFieldsSection');
+            if (status === 'RUNNING') {
+                closedSection.classList.add('hidden');
+            } else {
+                closedSection.classList.remove('hidden');
+            }
+        }
+
+        function populateDropdowns() {
+            // Setup dropdown
+            const setupSelect = document.getElementById('tradeSetup');
+            setupSelect.innerHTML = '';
+            appData.setups.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.innerText = s;
+                setupSelect.appendChild(opt);
+            });
+        }
+
+        // Form Submit Handler & Input Validation
+        function handleTradeFormSubmit(event) {
+            event.preventDefault();
+            const editId = document.getElementById('editTradeId').value;
+            const status = document.querySelector('input[name="tradeStatus"]:checked').value;
+            const pair = document.getElementById('tradePair').value;
+            const type = document.getElementById('tradeType').value;
+            const timeframe = document.getElementById('tradeTimeframe').value;
+            const setup = document.getElementById('tradeSetup').value;
+            const entryDate = document.getElementById('tradeEntryDate').value;
+            const entryTime = document.getElementById('tradeEntryTime').value;
+            const entryPrice = parseFloat(document.getElementById('tradeEntryPrice').value);
+            const sl = parseFloat(document.getElementById('tradeSL').value);
+            const tp = parseFloat(document.getElementById('tradeTP').value);
+            const lotSize = parseFloat(document.getElementById('tradeLotSize').value);
+            const emotion = document.getElementById('tradeEmotion').value;
+            const screenshot = document.getElementById('tradeScreenshot').value;
+            const notes = document.getElementById('tradeNotes').value;
+
+            // Input Validation for Stop Loss side
+            if (type === 'BUY' && sl >= entryPrice) {
+                showCustomModal('Validation Error', 'For a BUY (Long) trade, Stop Loss must be below Entry Price.', 'error');
+                return;
+            }
+            if (type === 'SELL' && sl <= entryPrice) {
+                showCustomModal('Validation Error', 'For a SELL (Short) trade, Stop Loss must be above Entry Price.', 'error');
+                return;
+            }
+
+            let exitPrice = '';
+            let outcome = '';
+            let pnl = 0;
+            let comm = 0;
+
+            if (status === 'CLOSED') {
+                exitPrice = document.getElementById('tradeExitPrice').value ? parseFloat(document.getElementById('tradeExitPrice').value) : '';
+                outcome = document.getElementById('tradeOutcome').value;
+                pnl = document.getElementById('tradePnL').value ? parseFloat(document.getElementById('tradePnL').value) : 0;
+                comm = document.getElementById('tradeComm').value ? parseFloat(document.getElementById('tradeComm').value) : 0;
+            }
+
+            if (editId) {
+                const idx = appData.trades.findIndex(t => t.id === editId);
+                if (idx !== -1) {
+                    appData.trades[idx] = {
+                        ...appData.trades[idx],
+                        status, pair, type, timeframe, setup, entryDate, entryTime, entryPrice, sl, tp, lotSize, exitPrice, outcome, pnl, comm, emotion, screenshot, notes
+                    };
+                }
+            } else {
+                const newTrade = {
+                    id: 'trade-' + Date.now(),
+                    status, pair, type, timeframe, setup, entryDate, entryTime, entryPrice, sl, tp, lotSize, exitPrice, outcome, pnl, comm, emotion, screenshot, notes
+                };
+                appData.trades.unshift(newTrade);
+            }
+
+            saveToLocalStorage();
+            updateAllUI();
+            closeAddTradeModal();
+            showCustomModal('Success', 'Trade execution saved successfully!');
+        }
+
+        // Quick close running trade
+        function closeRunningTradePrompt(tradeId) {
+            const trade = appData.trades.find(t => t.id === tradeId);
+            if (!trade) return;
+
+            const exitPrc = prompt(`Close trade for ${trade.pair} (${trade.type}). Enter Exit Price:`, trade.entryPrice);
+            if (exitPrc === null) return;
+
+            const pnlVal = prompt(`Enter Net P&L ($) for this trade (e.g., 150 or -75):`, "0");
+            if (pnlVal === null) return;
+
+            const numPnL = parseFloat(pnlVal);
+            const finalOutcome = numPnL > 0 ? 'WIN' : (numPnL < 0 ? 'LOSS' : 'BE');
+
+            trade.status = 'CLOSED';
+            trade.exitPrice = parseFloat(exitPrc);
+            trade.pnl = numPnL;
+            trade.outcome = finalOutcome;
+
+            saveToLocalStorage();
+            updateAllUI();
+            showCustomModal('Trade Closed', `Trade ${trade.pair} closed with P&L: $${numPnL}`);
+        }
+
+        function deleteTrade(tradeId) {
+            if (confirm('Are you sure you want to delete this trade execution?')) {
+                appData.trades = appData.trades.filter(t => t.id !== tradeId);
+                saveToLocalStorage();
+                updateAllUI();
+            }
+        }
+
+        // Calculations & UI Updates
+        function updateAllUI() {
+            populateFilterDropdowns();
+
+            // Apply Filters
+            const fPair = document.getElementById('filterPair').value;
+            const fSetup = document.getElementById('filterSetup').value;
+            const fType = document.getElementById('filterType').value;
+
+            let filteredTrades = appData.trades.filter(t => {
+                const matchPair = fPair === 'ALL' || t.pair === fPair;
+                const matchSetup = fSetup === 'ALL' || t.setup === fSetup;
+                const matchType = fType === 'ALL' || t.type === fType;
+                return matchPair && matchSetup && matchType;
+            });
+
+            const runningTrades = filteredTrades.filter(t => t.status === 'RUNNING');
+            const closedTrades = filteredTrades.filter(t => t.status === 'CLOSED');
+
+            // Badges
+            const runningBadge = document.getElementById('runningCountBadge');
+            const mobRunningBadge = document.getElementById('mobRunningBadge');
+            const alertContainer = document.getElementById('runningTradesAlertContainer');
+            const runningBadgeCount = document.getElementById('runningBadgeCount');
+
+            if (runningTrades.length > 0) {
+                runningBadge.innerText = runningTrades.length;
+                runningBadge.classList.remove('hidden');
+                mobRunningBadge.classList.remove('hidden');
+                alertContainer.classList.remove('hidden');
+                runningBadgeCount.innerText = runningTrades.length;
+            } else {
+                runningBadge.classList.add('hidden');
+                mobRunningBadge.classList.add('hidden');
+                alertContainer.classList.add('hidden');
+            }
+
+            // Metrics calculations
+            let totalNetPnL = 0;
+            let wins = 0;
+            let losses = 0;
+            let totalWinAmount = 0;
+            let totalLossAmount = 0;
+            let totalPips = 0;
+            let bestTradeVal = 0;
+            let worstTradeVal = 0;
+            let rMultiplesSum = 0;
+            let rCount = 0;
+
+            closedTrades.forEach(t => {
+                const pnl = Number(t.pnl) || 0;
+                totalNetPnL += pnl;
+
+                // Calculate pips approximately
+                let pipMultiplier = t.pair.includes('JPY') ? 100 : 10000;
+                let tradePips = 0;
+                if (t.exitPrice) {
+                    tradePips = Math.abs(t.exitPrice - t.entryPrice) * pipMultiplier;
+                    if (t.type === 'BUY' && t.exitPrice < t.entryPrice) tradePips *= -1;
+                    if (t.type === 'SELL' && t.exitPrice > t.entryPrice) tradePips *= -1;
+                }
+                totalPips += tradePips;
+
+                // R-multiple estimation: PnL / Risk amount (Risk = SL distance * lot * 10)
+                let slDist = Math.abs(t.entryPrice - t.sl) * pipMultiplier;
+                let riskUSD = slDist * t.lotSize * (t.pair.includes('JPY') ? 0.07 : 1.0); // approx
+                if (riskUSD > 0) {
+                    let r = pnl / riskUSD;
+                    rMultiplesSum += r;
+                    rCount++;
+                }
+
+                if (pnl > bestTradeVal) bestTradeVal = pnl;
+                if (pnl < worstTradeVal) worstTradeVal = pnl;
+
+                if (t.outcome === 'WIN' || pnl > 0) {
+                    wins++;
+                    totalWinAmount += pnl;
+                } else if (t.outcome === 'LOSS' || pnl < 0) {
+                    losses++;
+                    totalLossAmount += Math.abs(pnl);
+                }
+            });
+
+            const currentBalance = appData.startingBalance + totalNetPnL;
+            const winRate = (wins + losses) > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : '0.0';
+            const profitFactor = totalLossAmount > 0 ? (totalWinAmount / totalLossAmount).toFixed(2) : (totalWinAmount > 0 ? '99.00' : '0.00');
+            const avgWin = wins > 0 ? (totalWinAmount / wins) : 0;
+            const avgLoss = losses > 0 ? (totalLossAmount / losses) : 0;
+            const avgR = rCount > 0 ? (rMultiplesSum / rCount).toFixed(2) : '0.00';
+
+            // Update DOM
+            document.getElementById('headerBalance').innerText = '$' + currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('statBalance').innerText = '$' + currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('statNetProfit').innerText = (totalNetPnL >= 0 ? '+' : '') + '$' + totalNetPnL.toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('statWinRate').innerText = winRate + '%';
+            document.getElementById('statWinsLosses').innerText = `${wins} Wins / ${losses} Losses`;
+            document.getElementById('statProfitFactor').innerText = profitFactor;
+            document.getElementById('statTotalPips').innerText = (totalPips >= 0 ? '+' : '') + totalPips.toFixed(1) + ' pips';
+            document.getElementById('statTotalTradesCount').innerText = filteredTrades.length + ' Total Trades';
+            document.getElementById('statAvgWin').innerText = '$' + avgWin.toFixed(0);
+            document.getElementById('statAvgLoss').innerText = '$' + avgLoss.toFixed(0);
+            document.getElementById('statAvgR').innerText = avgR + 'R';
+            document.getElementById('statBestTrade').innerText = '+' + '$' + bestTradeVal.toFixed(0);
+            document.getElementById('statWorstTrade').innerText = '$' + worstTradeVal.toFixed(0);
+            document.getElementById('statRunningTradesBox').innerText = runningTrades.length + ' Running Now';
+
+            renderJournalTable(filteredTrades);
+            renderCharts(filteredTrades);
+        }
+
+        function populateFilterDropdowns() {
+            const pairSel = document.getElementById('filterPair');
+            const setupSel = document.getElementById('filterSetup');
+
+            const currentPair = pairSel.value;
+            const currentSetup = setupSel.value;
+
+            const pairs = [...new Set(appData.trades.map(t => t.pair))];
+            const setups = [...new Set(appData.trades.map(t => t.setup))];
+
+            pairSel.innerHTML = '<option value="ALL">All Pairs</option>';
+            pairs.forEach(p => {
+                pairSel.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+            pairSel.value = currentPair;
+
+            setupSel.innerHTML = '<option value="ALL">All Setups</option>';
+            setups.forEach(s => {
+                setupSel.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+            setupSel.value = currentSetup;
+        }
+
+        function resetFilters() {
+            document.getElementById('filterPair').value = 'ALL';
+            document.getElementById('filterSetup').value = 'ALL';
+            document.getElementById('filterType').value = 'ALL';
+            updateAllUI();
+        }
+
+        // Render Journal Table
+        function renderJournalTable(tradesToRender = null) {
+            const trades = tradesToRender || appData.trades;
+            const tbody = document.getElementById('journalTableBody');
+            const emptyState = document.getElementById('journalEmptyState');
+            tbody.innerHTML = '';
+
+            const searchQuery = document.getElementById('journalSearch').value.toLowerCase();
+            const filterStatus = document.getElementById('journalFilterStatus').value;
+            const filterOutcome = document.getElementById('journalFilterOutcome').value;
+
+            let filtered = trades.filter(t => {
+                const matchSearch = t.pair.toLowerCase().includes(searchQuery) || t.setup.toLowerCase().includes(searchQuery) || (t.notes && t.notes.toLowerCase().includes(searchQuery));
+                const matchStatus = filterStatus === 'ALL' || t.status === filterStatus;
+                const matchOutcome = filterOutcome === 'ALL' || t.outcome === filterOutcome;
+                return matchSearch && matchStatus && matchOutcome;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(t => {
+                const isRunning = t.status === 'RUNNING';
+                const statusBadge = isRunning 
+                    ? `<span class="bg-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full text-[9px] font-bold inline-flex items-center gap-1"><i class="fa-solid fa-bolt"></i> RUNNING</span>`
+                    : `<span class="bg-slate-700 text-slate-300 px-2.5 py-0.5 rounded-full text-[9px] font-bold">CLOSED</span>`;
+
+                const typeBadge = t.type === 'BUY'
+                    ? `<span class="text-emerald-400 font-bold">BUY</span>`
+                    : `<span class="text-rose-400 font-bold">SELL</span>`;
+
+                let pipMultiplier = t.pair.includes('JPY') ? 100 : 10000;
+                let pipsVal = 0;
+                if (t.exitPrice) {
+                    pipsVal = Math.abs(t.exitPrice - t.entryPrice) * pipMultiplier;
+                    if (t.type === 'BUY' && t.exitPrice < t.entryPrice) pipsVal *= -1;
+                    if (t.type === 'SELL' && t.exitPrice > t.entryPrice) pipsVal *= -1;
+                }
+
+                const pnlDisplay = isRunning 
+                    ? `<span class="text-amber-400 text-xs font-semibold">Active</span>`
+                    : `<span class="${t.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">$${Number(t.pnl).toFixed(2)}</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-dark-hover/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-3.5">${statusBadge}</td>
+                    <td class="p-3.5 font-bold text-white">${t.pair}</td>
+                    <td class="p-3.5"><div>${typeBadge}</div><div class="text-[10px] text-slate-400">${t.timeframe}</div></td>
+                    <td class="p-3.5 text-slate-300"><div>${t.entryDate}</div><div class="text-[10px] text-slate-400">${t.entryTime}</div></td>
+                    <td class="p-3.5 text-slate-300">${t.setup}</td>
+                    <td class="p-3.5 text-[11px]"><div>Entry: ${t.entryPrice}</div><div class="text-slate-400">Exit: ${t.exitPrice || 'Open'}</div></td>
+                    <td class="p-3.5 text-[11px]"><div>SL: ${t.sl}</div><div>TP: ${t.tp}</div></td>
+                    <td class="p-3.5 font-semibold ${pipsVal >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${isRunning ? '-' : (pipsVal >= 0 ? '+' : '') + pipsVal.toFixed(1)}</td>
+                    <td class="p-3.5">${pnlDisplay}</td>
+                    <td class="p-3.5 text-right space-x-1">
+                        ${isRunning ? `<button onclick="closeRunningTradePrompt('${t.id}')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-2.5 py-1 rounded-lg text-[10px] font-bold shadow">Close</button>` : ''}
+                        <button onclick="openAddTradeModal('${t.id}')" class="text-slate-400 hover:text-white px-1.5 py-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteTrade('${t.id}')" class="text-rose-400 hover:text-rose-300 px-1.5 py-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterRunningTrades() {
+            switchTab('journal');
+            document.getElementById('journalFilterStatus').value = 'RUNNING';
+            renderJournalTable();
+        }
+
+        // Render Charts (Chart.js)
+        function renderCharts(trades) {
+            const closed = trades.filter(t => t.status === 'CLOSED').sort((a,b) => new Date(a.entryDate) - new Date(b.entryDate));
+
+            let runningBal = appData.startingBalance;
+            const eqLabels = ['Start'];
+            const eqData = [runningBal];
+
+            closed.forEach((t, idx) => {
+                runningBal += (Number(t.pnl) || 0);
+                eqLabels.push(`Trade ${idx + 1}`);
+                eqData.push(runningBal);
+            });
+
+            // 1. Equity Curve
+            const ctxEq = document.getElementById('equityCurveChart').getContext('2d');
+            if (equityChartInstance) equityChartInstance.destroy();
+            equityChartInstance = new Chart(ctxEq, {
+                type: 'line',
+                data: {
+                    labels: eqLabels,
+                    datasets: [{
+                        label: 'Account Equity ($)',
+                        data: eqData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // 2. Net P&L by Currency Pair
+            const pairMap = {};
+            closed.forEach(t => {
+                pairMap[t.pair] = (pairMap[t.pair] || 0) + (Number(t.pnl) || 0);
+            });
+            const pairLabels = Object.keys(pairMap);
+            const pairValues = Object.values(pairMap);
+
+            const ctxPair = document.getElementById('pairPnLChart').getContext('2d');
+            if (pairChartInstance) pairChartInstance.destroy();
+            pairChartInstance = new Chart(ctxPair, {
+                type: 'bar',
+                data: {
+                    labels: pairLabels.length ? pairLabels : ['No Data'],
+                    datasets: [{
+                        label: 'Net P&L ($)',
+                        data: pairValues.length ? pairValues : [0],
+                        backgroundColor: pairValues.map(v => v >= 0 ? '#10b981' : '#f43f5e'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // 3. Win Rate by Setup
+            const setupStats = {};
+            closed.forEach(t => {
+                if (!setupStats[t.setup]) setupStats[t.setup] = { wins: 0, total: 0 };
+                setupStats[t.setup].total++;
+                if (t.outcome === 'WIN' || t.pnl > 0) setupStats[t.setup].wins++;
+            });
+            const setupLabels = Object.keys(setupStats);
+            const setupWR = setupLabels.map(s => ((setupStats[s].wins / setupStats[s].total) * 100).toFixed(1));
+
+            const ctxSetup = document.getElementById('setupWinRateChart').getContext('2d');
+            if (setupChartInstance) setupChartInstance.destroy();
+            setupChartInstance = new Chart(ctxSetup, {
+                type: 'bar',
+                data: {
+                    labels: setupLabels.length ? setupLabels : ['No Data'],
+                    datasets: [{
+                        label: 'Win Rate (%)',
+                        data: setupWR.length ? setupWR : [0],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { max: 100, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // 4. Monthly Net P&L
+            const monthMap = {};
+            closed.forEach(t => {
+                const m = t.entryDate ? t.entryDate.substring(0, 7) : 'Unknown';
+                monthMap[m] = (monthMap[m] || 0) + (Number(t.pnl) || 0);
+            });
+            const monthLabels = Object.keys(monthMap).sort();
+            const monthValues = monthLabels.map(m => monthMap[m]);
+
+            const ctxMonth = document.getElementById('monthlyPnLChart').getContext('2d');
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+            monthlyChartInstance = new Chart(ctxMonth, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels.length ? monthLabels : ['No Data'],
+                    datasets: [{
+                        label: 'Monthly Net P&L ($)',
+                        data: monthValues.length ? monthValues : [0],
+                        backgroundColor: monthValues.map(v => v >= 0 ? '#10b981' : '#f43f5e'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // Pairs Analysis Table
+        function renderPairsTable() {
+            const tbody = document.getElementById('pairsTableBody');
+            tbody.innerHTML = '';
+
+            const closed = appData.trades.filter(t => t.status === 'CLOSED');
+            const map = {};
+
+            closed.forEach(t => {
+                if (!map[t.pair]) {
+                    map[t.pair] = { total: 0, wins: 0, losses: 0, pips: 0, pnl: 0 };
+                }
+                map[t.pair].total++;
+                const pnl = Number(t.pnl) || 0;
+                map[t.pair].pnl += pnl;
+
+                let pipMult = t.pair.includes('JPY') ? 100 : 10000;
+                let pips = 0;
+                if (t.exitPrice) {
+                    pips = Math.abs(t.exitPrice - t.entryPrice) * pipMult;
+                    if (t.type === 'BUY' && t.exitPrice < t.entryPrice) pips *= -1;
+                    if (t.type === 'SELL' && t.exitPrice > t.entryPrice) pips *= -1;
+                }
+                map[t.pair].pips += pips;
+
+                if (t.outcome === 'WIN' || pnl > 0) map[t.pair].wins++;
+                else if (t.outcome === 'LOSS' || pnl < 0) map[t.pair].losses++;
+            });
+
+            const keys = Object.keys(map);
+            if (keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 text-xs">No closed trades recorded yet.</td></tr>`;
+                return;
+            }
+
+            keys.forEach(pair => {
+                const data = map[pair];
+                const wr = ((data.wins / data.total) * 100).toFixed(1);
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-dark-hover/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-3.5 font-bold text-white">${pair}</td>
+                    <td class="p-3.5">${data.total}</td>
+                    <td class="p-3.5 text-slate-300"><span class="text-emerald-400 font-bold">${data.wins}</span> / <span class="text-rose-400 font-bold">${data.losses}</span></td>
+                    <td class="p-3.5 font-semibold text-blue-400">${wr}%</td>
+                    <td class="p-3.5 font-semibold ${data.pips >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${(data.pips >= 0 ? '+' : '') + data.pips.toFixed(1)}</td>
+                    <td class="p-3.5 text-right font-bold ${data.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}">$${data.pnl.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Calculators Logic
+        function calculatePositionSize() {
+            const bal = parseFloat(document.getElementById('calcBalance').value) || 0;
+            const riskPct = parseFloat(document.getElementById('calcRiskPct').value) || 0;
+            const entry = parseFloat(document.getElementById('calcEntry').value) || 0;
+            const sl = parseFloat(document.getElementById('calcSL').value) || 0;
+
+            if (entry <= 0 || sl <= 0) {
+                showCustomModal('Error', 'Please enter valid entry and stop loss prices.');
+                return;
+            }
+
+            const riskUSD = bal * (riskPct / 100);
+            const pipsDiff = Math.abs(entry - sl) * 10000;
+            const lotSize = (riskUSD / (pipsDiff * 10)).toFixed(2);
+
+            document.getElementById('posResRisk').innerText = '$' + riskUSD.toFixed(2);
+            document.getElementById('posResPips').innerText = pipsDiff.toFixed(1) + ' pips';
+            document.getElementById('posResLots').innerText = lotSize + ' standard lots';
+            document.getElementById('posCalcResult').classList.remove('hidden');
+        }
+
+        function calculatePipProfit() {
+            const lot = parseFloat(document.getElementById('pipLotSize').value) || 1;
+            const entry = parseFloat(document.getElementById('pipEntry').value) || 0;
+            const exit = parseFloat(document.getElementById('pipExit').value) || 0;
+            const pairType = document.getElementById('pipPairType').value;
+
+            if (entry <= 0 || exit <= 0) {
+                showCustomModal('Error', 'Please enter valid entry and exit prices.');
+                return;
+            }
+
+            const pipMult = pairType === 'JPY' ? 100 : 10000;
+            const pips = Math.abs(exit - entry) * pipMult;
+            const pipValuePerLot = pairType === 'JPY' ? 7.0 : 10.0;
+            const profit = pips * pipValuePerLot * lot;
+
+            document.getElementById('pipResPips').innerText = pips.toFixed(1) + ' pips';
+            document.getElementById('pipResMoney').innerText = '$' + profit.toFixed(2);
+            document.getElementById('pipCalcResult').classList.remove('hidden');
+        }
+
+        function calculateRR() {
+            const entry = parseFloat(document.getElementById('rrEntry').value) || 0;
+            const sl = parseFloat(document.getElementById('rrSL').value) || 0;
+            const tp = parseFloat(document.getElementById('rrTP').value) || 0;
+
+            if (entry <= 0 || sl <= 0 || tp <= 0) {
+                showCustomModal('Error', 'Please enter valid entry, SL and TP prices.');
+                return;
+            }
+
+            const riskPips = Math.abs(entry - sl) * 10000;
+            const rewardPips = Math.abs(tp - entry) * 10000;
+            const ratio = (rewardPips / riskPips).toFixed(2);
+
+            document.getElementById('rrResPips').innerText = `${riskPips.toFixed(0)} / ${rewardPips.toFixed(0)} pips`;
+            document.getElementById('rrResRatio').innerText = `1 : ${ratio}R`;
+            document.getElementById('rrCalcResult').classList.remove('hidden');
+        }
+
+        // News & Review Note Handlers
+        function saveNewsJournalNote() {
+            appData.newsNotes = document.getElementById('fullNewsNotesArea').value;
+            saveToLocalStorage();
+            showCustomModal('Saved', 'News notes saved successfully.');
+        }
+
+        function saveReviewNotes() {
+            appData.reviewWeeklyGood = document.getElementById('reviewWeeklyGood').value;
+            appData.reviewWeeklyMistakes = document.getElementById('reviewWeeklyMistakes').value;
+            appData.reviewMonthlyFocus = document.getElementById('reviewMonthlyFocus').value;
+            appData.reviewMonthlyPsych = document.getElementById('reviewMonthlyPsych').value;
+            saveToLocalStorage();
+        }
+
+        function saveSettingsAccount() {
+            appData.startingBalance = parseFloat(document.getElementById('settingsStartingBalance').value) || 10000;
+            appData.currency = document.getElementById('settingsCurrency').value;
+            saveToLocalStorage();
+            updateAllUI();
+            showCustomModal('Saved', 'Account settings updated successfully.');
+        }
+
+        function saveSetupsList() {
+            const raw = document.getElementById('settingsSetupsInput').value;
+            appData.setups = raw.split(',').map(s => s.trim()).filter(Boolean);
+            saveToLocalStorage();
+            showCustomModal('Saved', 'Trading setups updated successfully.');
+        }
+
+        // CSV Export & Import
+        function exportTradesCSV() {
+            let csv = 'Status,Pair,Type,Timeframe,Setup,EntryDate,EntryTime,EntryPrice,SL,TP,LotSize,ExitPrice,Outcome,PnL,Comm,Emotion,Notes\n';
+            appData.trades.forEach(t => {
+                csv += `"${t.status}","${t.pair}","${t.type}","${t.timeframe}","${t.setup}","${t.entryDate}","${t.entryTime}","${t.entryPrice}","${t.sl}","${t.tp}","${t.lotSize}","${t.exitPrice || ''}","${t.outcome || ''}","${t.pnl || 0}","${t.comm || 0}","${t.emotion || ''}","${(t.notes || '').replace(/"/g, '""')}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'swing_trader_journal_export.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function importTradesCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                if (lines.length < 2) return;
+
+                let importedCount = 0;
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    // Simple CSV split
+                    const cols = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    if (cols && cols.length >= 8) {
+                        const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                        appData.trades.push({
+                            id: 'trade-' + Date.now() + '-' + i,
+                            status: clean[0] || 'CLOSED',
+                            pair: clean[1] || 'EURUSD',
+                            type: clean[2] || 'BUY',
+                            timeframe: clean[3] || '4H',
+                            setup: clean[4] || 'Support/Resistance Bounce',
+                            entryDate: clean[5] || '2026-10-01',
+                            entryTime: clean[6] || '08:00',
+                            entryPrice: parseFloat(clean[7]) || 1.0800,
+                            sl: parseFloat(clean[8]) || 1.0750,
+                            tp: parseFloat(clean[9]) || 1.0900,
+                            lotSize: parseFloat(clean[10]) || 1.0,
+                            exitPrice: clean[11] ? parseFloat(clean[11]) : '',
+                            outcome: clean[12] || 'WIN',
+                            pnl: parseFloat(clean[13]) || 0,
+                            comm: parseFloat(clean[14]) || 0,
+                            emotion: clean[15] || 'Calm & Patient',
+                            notes: clean[16] || ''
+                        });
+                        importedCount++;
+                    }
+                }
+                saveToLocalStorage();
+                updateAllUI();
+                showCustomModal('Success', `Successfully imported ${importedCount} trades from CSV.`);
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllDataConfirm() {
+            if (confirm('Are you sure you want to reset all journal data? This cannot be undone.')) {
+                appData.trades = [];
+                appData.newsNotes = '';
+                saveToLocalStorage();
+                updateAllUI();
+                showCustomModal('Reset', 'All journal data has been cleared.');
+            }
+        }
+
+        // Custom Modal helper
+        function showCustomModal(title, message) {
+            document.getElementById('customModalTitle').innerText = title;
+            document.getElementById('customModalMessage').innerText = message;
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
